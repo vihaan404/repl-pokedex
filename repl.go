@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-func startRepl() {
+func startRepl(cnf *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println("welcom to the pokdex")
 	for {
 		fmt.Print("pokdex >")
 		scanner.Scan()
 
-		command := scanner.Text()
-		cleaned := cleanInput(command)
+		scanned := scanner.Text()
+		cleaned := cleanInput(scanned)
 		if len(cleaned[0]) == 0 {
 			continue
 		}
@@ -23,9 +23,14 @@ func startRepl() {
 		allCommands := allCommand()
 
 		if command, ok := allCommands[cleaned[0]]; ok {
-			command.callback()
+			err := command.callback(cnf)
+			if err != nil {
+				fmt.Println(err)
+			}
+
 		} else {
 			fmt.Println("invalid command")
+			continue
 		}
 
 	}
@@ -40,7 +45,7 @@ func cleanInput(str string) []string {
 type cliCommand struct {
 	name        string
 	discription string
-	callback    func() error
+	callback    func(cnf *config) error
 }
 
 func allCommand() map[string]cliCommand {
@@ -54,6 +59,16 @@ func allCommand() map[string]cliCommand {
 			name:        "exit",
 			discription: "exit the clipokedex",
 			callback:    commandExit,
+		},
+		"map": {
+			name:        "map",
+			discription: "displays the names of next 20 location",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			discription: "displays the names of prev 20 location",
+			callback:    commandMapb,
 		},
 	}
 }
